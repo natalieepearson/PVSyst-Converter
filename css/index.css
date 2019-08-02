@@ -1,0 +1,120 @@
+
+body {
+	width: 100%;
+	height: 80%;
+	display: grid;
+	grid-template-columns: 0.5fr 1fr 2fr 0.5fr;
+	grid-template-rows: 1fr 3fr 1fr 5fr 2fr;
+	font-family: Calibri;
+}
+
+header {
+	grid-column: 1 / 5;
+	grid-row: 1 / 2;
+}
+
+#description {
+	grid-column: 2 / 4;
+	grid-row: 2 / 3;
+	align-self: center;
+	justify-self: center;
+}
+
+#upload {
+	grid-column: 2 / 3;
+	grid-row: 3 / 4;
+	align-self: center;
+	justify-self: left;
+	width:100%;
+}
+[type="file"] {
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  height: 0px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute !important;
+  white-space: nowrap;
+  width: 0px;
+}
+
+[type="file"] + label {
+  background-color: #C1CD40;
+  border-radius: 4rem;
+  color: #fff;
+  cursor: pointer;
+  display: inline;
+  padding: 5% 5%;
+  height: 100%;
+  font-size: 200%;
+  text-align: center;
+  vertical-align: middle;
+  position: relative;
+  box-shadow: 0 3px 5px 0 #e3e2d3;
+  border: 0px;
+}
+  
+[type="file"]:focus + label,
+[type="file"] + label:hover, #download_btn:focus, #download_btn:hover {
+    background-color: #E8DA54;
+}
+  
+[type="file"]:focus + label {
+  outline: 1px dotted #000;
+}
+
+#download {
+	grid-column: 3 / 4;
+	grid-row: 3 / 4;
+	align-self: center;
+	width: 100%;
+	justify-self: right;
+}
+#download_btn {
+	margin-left: 5%;
+	float: right;
+	display: inline;
+	 background-color: #C1CD40;
+	  border-radius: 4rem;
+	  color: #fff;
+	  cursor: pointer;
+	  display: inline;
+	 padding: 3% 4%;
+	  height: 100%;
+	  font-size: 200%;
+	  text-align: center;
+	  vertical-align: middle;
+	  position: relative;
+	  box-shadow: 0 3px 5px 0 #e3e2d3;
+	  border: 0px;
+}
+#filename {
+	display: inline;
+	margin-top: 6%;
+	width: 40%;
+
+}
+h3 {
+	padding-bottom: 0px;
+	display: inline;
+	margin-left: 25%
+}
+
+
+#output {
+	grid-column: 2 / 4;
+	grid-row: 4 / 5;
+	background: #e3e2d3;
+	overflow: auto;
+	height: 400px;
+}
+
+footer {
+	grid-column: 1 / 5;
+	grid-row: 5 / 6;
+	align-self: center;
+	justify-self: center;
+}
+#logo {
+	height: 90px;
+}

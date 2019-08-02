@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Dxf-Parser - Browser Sample</title>
+		
+		<script src="../../dist/dxf-parser.js"></script>
+		<script src = "../../src/converter.js"></script>
+		<link rel = "stylesheet" type = "text/css" href = "../../css/index.css"/>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	</head>
+	<body>
+		<header>
+			<img id = "logo" src = "../../logo.png">
+		</header>
+
+		<div id = "description">
+			<h1>Helioscope(.dxf files) to PVSyst(.SHD files) </h1>
+
+			<p>
+			This program allows you to take your exported helioscope files and import them into the shading section of 
+			PVSyst. This program is specific for Point Load Power's PVBooster product.
+			</p>
+			<h2> Steps: </h2>
+			<ol>
+				<li>Export Helioscope drawing as a .dxf file </li>
+				<li>Upload .dxf file here and download the converted .SHD file</li>
+				<li>In PVSyst, navigate to Near Shadings > Construction/Perspective > File > Read scene </li>
+
+		</div>
+	
+		<div id = "upload">
+			<input id="file" type="file"/>
+			<label for="file"/> Choose a file </label>
+		</div>
+
+		<div id = "download" style= "visibility: hidden;">
+			<h3>File Name: </h3>
+			<input id = "filename" type = "text"/>
+			<button id = "download_btn">
+				<i class="fa fa-download"></i>
+			</button>
+		</div>
+
+		<p id="output" stlye="font-family: monospace;">	
+		</p>
+		<script>
+			var outputElement = document.getElementById('output');
+			var textFile = "";
+			
+			document.getElementById("file").onchange = function() {
+				outputElement.innerHTML = "";
+				var reader = new FileReader();
+				reader.readAsText(this.files[0]);
+				reader.onload = function(e) {
+					var fileText = e.target.result;
+					var parser = new DxfParser();
+					var dxf = null;
+					try {
+						dxf = parser.parseSync(fileText);
+					} catch(err) {
+						return console.error(err.stack);
+					}
+					console.log('Sucessfully Parsed!');
+					c = new converter(JSON.stringify(dxf, null, 4));
+					textFile = c.convert();
+					outputElement.innerHTML = textFile;
+					document.getElementById("download").style.visibility = "visible";
+				};
+
+			};
+
+			document.getElementById("download_btn").addEventListener("click", function() {
+				var filename = document.getElementById("filename").value + ".SHD";
+				console.log(filename);
+				download(filename, textFile);
+			});
+
+			function download(filename, text) {
+				var element = document.createElement('a');
+				element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+				element.setAttribute('download', filename);
+
+				element.style.display = 'none';
+				document.body.appendChild(element);
+
+				element.click();
+
+				document.body.removeChild(element);
+			}
+			
+
+		</script>
+	</body>
+</html>
