@@ -4,64 +4,83 @@ function converter(json) {
 	this.SHDfile = new SHDfile();
 	console.log(this.jsonFile);
 	this.convert = function() {
-		var name = "pvShdArrayTracking";
-		
-		//find drawings center
-		//var xcenter = this.jsonFile.tables.viewPort.viewPorts[0].center.x;
-		//var ycenter = this.jsonFile.tables.viewPort.viewPorts[0].center.y;
+        //convert the json file into shade tracking array objects
+        var name = "pvShdArrayTracking";
 
-		var map = new Map();
-		//get positions of all modules
+        //map for tracking panels in the same column
+        var map = new Map();
+
+        //get positions of all modules
 		for(var i in this.jsonFile.entities) {
-			if (this.jsonFile.entities[i].layer == "Modules") {
-				var x = ((this.jsonFile.entities[i].position.x) * -0.0254).toFixed(1);
-				var y = ((this.jsonFile.entities[i].position.y) * -0.0254).toFixed(1);
-				var z = (this.jsonFile.entities[i].position.z * -0.0254).toFixed(1);
-				var pvShdArray = new pvShdArrayTracking(name);
-				pvShdArray.x = x;
-				pvShdArray.y = y;
-				pvShdArray.z = z;
-				pvShdArray.ySpacing = -1;
-				this.SHDfile.ListeObjets.push(pvShdArray);
+            if (this.jsonFile.entities[i].layer == "Modules") {
+                //the x y z coordinates of one panel
+                var x = ((this.jsonFile.entities[i].position.x) * -0.0254);
+				var y = ((this.jsonFile.entities[i].position.y) * -0.0254);
+                var z = (this.jsonFile.entities[i].position.z * -0.0254);
 
-				/*IMPLEMINTATION WITH NElemChamps -- DOES NOT WORK
-				if(!map.has(x) || this.SHDfile.ListeObjets.length == 0) {
-					var pvShdArray = new pvShdArrayTracking(name);
-					pvShdArray.x = x;
+                //need to round the x value for searching purposes because each panel differs slightly eventhough they are in the same 
+                //column
+                var searchX = x.toFixed(1);
+                
+                if (!map.has(searchX) || this.SHDfile.ListeObjets.length == 0) {
+                    //if the column does not exist yet (no other panels are in that x position) or it is the first panel in the file,
+                    //create a new shade tracking array object, set the coordinates, and add the panel to the list of objects in the 
+                    //shd file
+                    var pvShdArray = new pvShdArrayTracking(name);
+                    pvShdArray.x = x;
 					pvShdArray.y = y;
 					pvShdArray.z = z;
-					pvShdArray.ySpacing = -1;
-					this.SHDfile.ListeObjets.push(pvShdArray);
-					newColumn = {index: this.SHDfile.ListeObjets.length-1, lastY: y};
-					map.set(x, newColumn);
-				} else {
-					console.log('map has');
-					curYSpacing = Math.abs(y-map.get(x).lastY);
-					if(this.SHDfile.ListeObjets[map.get(x).index].ySpacing == -1) {
-						console.log('setting ysapcing: ' + curYSpacing);
-						this.SHDfile.ListeObjets[map.get(x).index].ySpacing = curYSpacing;
-						this.SHDfile.ListeObjets[map.get(x).index].NElemChamps++;
-						map.get(x).lastY = y;
-					} else if (curYSpacing === this.SHDfile.ListeObjets[map.get(x).index].ySpacing) {
-						console.log("adding champ");
-						this.SHDfile.ListeObjets[map.get(x).index].NElemChamps++;
-						map.get(x).lastY = y;
-					} else {
-						var pvShdArray = new pvShdArrayTracking(name);
-						pvShdArray.x = x;
-						pvShdArray.y = y;
+                    this.SHDfile.ListeObjets.push(pvShdArray);
+
+                    //add this column to the map so future pannels can add onto it that have the same x value
+                    //columnPoints = [{ y: y, index: this.SHDfile.ListeObjets.length - 1 }];
+                    newColumn = { index: this.SHDfile.ListeObjets.length - 1, bottomY: y, topY: y};
+                    map.set(searchX, newColumn);
+                } else {
+                    //the map does have this x, therefore the column does exist...attempt to add panel to pre-existing column
+
+                    //get the spacing between the bottom y value in the column and the current panel 
+                    curYSpacing = Math.abs(y - map.get(searchX).bottomY);
+
+                    if (this.SHDfile.ListeObjets[map.get(searchX).index].ySpacing == -1) {
+                        //the spacing for this column has not been set yet, therefore, there is just one panel in the column
+                        //set the spacing of this column to current spacing and add a panel 
+                        this.SHDfile.ListeObjets[map.get(searchX).index].ySpacing = curYSpacing;
+                        this.SHDfile.ListeObjets[map.get(searchX).index].NElemChamps++; //NElemChamps is the number of panels in a row
+                        if (parseInt(this.SHDfile.ListeObjets[map.get(searchX).index].y) < y) {
+                            //in PVSyst, columns are built from the lowest panel upwards, therefore, the y coordinate of the column
+                            //must be the lowest y value
+                            //(NOTE: PVSyst axes are switched, negatives are positives and positives are negatives)
+                            this.SHDfile.ListeObjets[map.get(searchX).index].y = y;
+                            map.get(searchX).bottomY = y;
+                        } else {
+                            map.get(searchX).topY = y;
+                        }
+                    } else if (curYSpacing.toFixed(1) == this.SHDfile.ListeObjets[map.get(searchX).index].ySpacing.toFixed(1)) { 
+                        //the current spacing is the same as the spacing of the other panels in the column, therefore, the panel 
+                        //belongs to this column, add the panel and set the lowest y value 
+                        this.SHDfile.ListeObjets[map.get(searchX).index].NElemChamps++;
+                        if (parseInt(this.SHDfile.ListeObjets[map.get(searchX).index].y) < y) {
+                            this.SHDfile.ListeObjets[map.get(searchX).index].y = y;
+                            map.get(searchX).bottomY = y;
+                        } else {
+                            map.get(searchX).topY = y;
+                        }
+                    } else { 
+                        //has x in map but has different spacing, therefore, this panel marks the start of a new column on the x point
+                        var pvShdArray = new pvShdArrayTracking(name);
+                        pvShdArray.x = x;
+                        pvShdArray.y = y;
 						pvShdArray.z = z;
-						pvShdArray.ySpacing = -1;
 						this.SHDfile.ListeObjets.push(pvShdArray);
-						newColumn = {index: this.SHDfile.ListeObjets.length-1, lastY: y};
-						map.set(x, newColumn);
+                        newColumn = { index: this.SHDfile.ListeObjets.length - 1, lastY: y };
+                        map.set(searchX, newColumn);
 					}
-				} */
-				
+				} 			
 			}
 		}
 		
-		//find pannel block to get dimensions of pannel
+		//find module "block" in dxf file to get dimensions of pannel
 		for(var i in this.jsonFile.blocks) {
 			if(this.jsonFile.blocks[i].name.match("module")) {
 				var j = 0;
@@ -75,7 +94,8 @@ function converter(json) {
 						width = this.jsonFile.blocks[i].entities[0].vertices[j].y;
 					}
 					j++;
-				}
+                }
+                //set the dimensions of the panels
 				for(var k in this.SHDfile.ListeObjets) {
 					this.SHDfile.ListeObjets[k].LongShed = Math.abs(length*0.0254);
 					this.SHDfile.ListeObjets[k].LargShed = Math.abs(width*0.0254);
@@ -83,12 +103,11 @@ function converter(json) {
 			}
 			
 		} 
-
-
-
 		return this.SHDfile.print();
 	}
 }
+
+
 
 class SHDfile {
 	constructor() {
@@ -142,20 +161,22 @@ class pvShdArrayTracking extends PVObject {
 	constructor(name) {
 		super(name);
 		this.NElemChamps = 1;
-		this.xSpacing = 0;
-		this.ySpacing = 0;
+		this.lowestY = null;
+		this.ySpacing = -1;
 		this.pvCollPlane = new pvCollPlane();
 		this.LargShed = null;
 		this.LongShed = null;
 		this.TypeOrigine = "7";
 	}
-	print(count) {
+    print(count) {
 		var output = super.print(count);
 		output += "NElemChamps=" + this.NElemChamps + "\n";
 		output += "LongShed=" + this.LongShed + "\n";
 		output += "LargShed=" + this.LargShed + "\n";
-		output += "TypeOrigine=" + this.TypeOrigine + "\n";
-		//output += "PitchNS=" + (this.ySpacing - this.LongShed) + "\n"; 
+        output += "TypeOrigine=" + this.TypeOrigine + "\n";
+        if (this.ySpacing != -1) {
+            output += "PitchNS=" + this.ySpacing + "\n";
+        }
 		output += this.pvCollPlane.print();
 		output += "End of PVObject " + this.name + "\n";
 		return output;
