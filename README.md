@@ -1,3 +1,7 @@
+# Helioscope (dxf file) to PVSyst (SHD file) Converter
+
+This program converts 2D drawings from Helioscope and outputs a 3D shading file for PVSyst. The outputted file is specific to Point Load Power’s PVBooster product.  
+
 
 # Dxf-Parser
 
