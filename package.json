@@ -34,8 +34,6 @@
     "webpack-cli": "^3.2.3"
   },
   "dependencies": {
-    "babel": "^6.23.0",
-    "express": "^4.17.1",
     "loglevel": "^1.2.0"
   },
   "keywords": [

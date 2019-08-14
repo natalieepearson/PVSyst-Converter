@@ -1,11 +1,7 @@
 {
   "ExpandedNodes": [
-    "",
-    "\\samples",
-    "\\samples\\browser",
-    "\\samples\\data",
-    "\\samples\\node"
+    ""
   ],
-  "SelectedNode": "\\samples\\browser\\index.html",
+  "SelectedNode": "\\index.html",
   "PreviewInSolutionExplorer": false
 }

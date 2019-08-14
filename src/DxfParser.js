@@ -761,4 +761,3 @@ const BLOCK_REFERENCED_XREF = 64;
 // Code 6 of an entity indicates inheritance of properties (eg. color).
 //   BYBLOCK means inherits from block
 //   BYLAYER (default) mean inherits from layer
-

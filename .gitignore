@@ -10,4 +10,3 @@ out.json
 *.received.*
 dist/
 *.tgz
-/.metadata/
