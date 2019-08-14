@@ -13,7 +13,7 @@ function converter(json) {
         for (var i in this.jsonFile.blocks) {
             if (this.jsonFile.blocks[i].name.match("module")) {
                 var j = 0;
-                while (length == 0 || width == 0 || height == 0) {
+                while ((length == 0 || width == 0 || height == 0) && j < 4) {
                     if (length == 0) {
                         length = this.jsonFile.blocks[i].entities[0].vertices[j].x;
                     }
@@ -90,16 +90,18 @@ function converter(json) {
                     //if the column already exists based on the x value, add it to the column
                     //otherwise create a new column based on the x value
                     if (NSColumns.has(searchX)) {
-                        NSColumns.get(searchX).yPoints.push(y);
+                        var newCoordinate = { "x": x, "y": y };
+                        NSColumns.get(searchX).push(newCoordinate);
                         //each x value is slightly different in the dxf file, this if statement is finding 
                         //the leftmost x value of each column (NOTE: pvsyst axises have switched signs)
                         if (NSColumns.get(searchX).x < x) {
                             NSColumns.get(searchX).x = x;
                         }
                     } else {
-                        var yPoint = new Array();
-                        yPoint.push(y)
-                        NSColumns.set(searchX, { x: x, yPoints: yPoint });
+                        var coordinates = new Array();
+                        var newCoordinate = { "x": x, "y": y };
+                        coordinates.push(newCoordinate);
+                        NSColumns.set(searchX, coordinates);
                     }
                 }
 
@@ -107,8 +109,8 @@ function converter(json) {
         }
 
         //build the SHD file objects
-        var ListeObjetsNS = buildNSField(NSColumns, length, width);
-        var ListeObjetsSkewed = buildSkewedField(skewedColumns, length, width);
+        var ListeObjetsNS = buildField(NSColumns, length, width);
+        var ListeObjetsSkewed = buildField(skewedColumns, length, width);
         this.SHDfile.ListeObjets = ListeObjetsNS.concat(ListeObjetsSkewed);
 
         //Print the SHD file in correct PVSyst format
@@ -116,12 +118,12 @@ function converter(json) {
 	}
 }
 
-function buildSkewedField(map, length, width) {
+function buildField(map, length, width) {
     var ListeObjets = new Array();
     //for each column, create a PVSyst object 
     for (var coordinates of map.values()) {
         //sort the y values lowest to highest in order to easily identify keepout areas
-        //and PVSyst builds the columns from lowest point up
+        //and PVSyst builds the columns from south most point up
         coordinates.sort(function (a, b) { return b.y - a.y });
         console.log(coordinates);
         var ySpacing = -1;
@@ -173,66 +175,6 @@ function buildSkewedField(map, length, width) {
                     //add the new column as a new PVSyst object and hold the new index of the most recent PVSyst Object
                     ListeObjets.push(pvShdArray);
                     curIndex = ListeObjets.length - 1;
-                }
-
-            }
-        }
-    }
-    return ListeObjets;
-}
-
-function buildNSField(map, length, width) {
-    var ListeObjets = new Array();
-    //for each column, create a PVSyst object 
-    for (var coordinates of map.values()) {
-        //sort the y values lowest to highest in order to easily identify keepout areas
-        //and PVSyst builds the columns from lowest point up
-        coordinates.yPoints.sort(function (a, b) { return b - a });
-        var columnSpacing = -1;
-        var curIndex = 0;
-        //for each point in the column, identify the spacing between the current and the pervious panel to insure the
-        //same spacing (NOTE: each column in PVSyst can only have one spacing value, it does not account for keepout areas)
-        for (var i in coordinates.yPoints) { 
-            if (columnSpacing == -1) {
-                //THIS IS SPECIFIC TO PVBOOSTER
-                var pvShdArray = new pvShdArrayTracking("pvShdArrayTracking");
-                //set x and y coordinates of the start of the column and the width and length of the panel
-                //add the panel to the list of objects in the SHD file
-                pvShdArray.x = coordinates.x;
-                pvShdArray.y = coordinates.yPoints[i].toFixed(1);
-                pvShdArray.LongShed = Math.abs(length * 0.0254);
-                pvShdArray.LargShed = Math.abs(width * 0.0254);
-                ListeObjets.push(pvShdArray);
-                //hold the index of this column in the list of obejects in order to add more panels in the future
-                curIndex = ListeObjets.length - 1;
-                columnSpacing = -2;
-            } else {
-                //calculate the current spacing between panels
-                currColumnSpacing = Math.abs(coordinates.yPoints[i] - coordinates.yPoints[i - 1]);
-                if (columnSpacing == -2) {
-                    //set the spacing of the column 
-                    //(at this point, the column should only have two panels in it, therefore, these two panels define the spacing)
-                    ListeObjets[curIndex].ySpacing = currColumnSpacing.toFixed(2);
-                    columnSpacing = currColumnSpacing;
-                    //add the panel to the column
-                    //(NOTE: NElemChamps is the count of panels in each column in PVSyst)
-                    ListeObjets[curIndex].NElemChamps++;
-                } else if (currColumnSpacing.toFixed() == columnSpacing.toFixed()) {
-                    //the spacing is the same as the columns spacing, therefore the panel belongs to this column
-                    //add the panel to the column
-                   ListeObjets[curIndex].NElemChamps++;
-                } else {
-                    //the panel belongs to this column but has a different spacing, therefore, this panel is the start of a new
-                    //column. Set x and y coordinates and length and width of panel
-                    var pvShdArray = new pvShdArrayTracking("pvShdArrayTracking");
-                    pvShdArray.x = coordinates.x;
-                    pvShdArray.y = coordinates.yPoints[i].toFixed(1);
-                    pvShdArray.LongShed = Math.abs(length * 0.0254);
-                    pvShdArray.LargShed = Math.abs(width * 0.0254);
-                    columnSpacing = -2;
-                    //add the new column as a new PVSyst object and hold the new index of the most recent PVSyst Object
-                    ListeObjets.push(pvShdArray);
-                    curIndex =ListeObjets.length - 1;
                 }
 
             }
