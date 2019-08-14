@@ -23,7 +23,7 @@ var convertedFile = Converter.convert();
 - css/index.css
 - src/converter.js 
 
-**The following Github parser was used in this program**
+**The rest of the files came from the following Github parser...**
 
 
 # Dxf-Parser
