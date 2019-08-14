@@ -2,9 +2,17 @@
 
 This program converts 2D drawings from Helioscope and outputs a 3D shading file for PVSyst. The outputted file is specific to Point Load Power’s PVBooster product.  
 
+**Usage:**
+To run, open index.html. Implement the code below to use the converter in other applications.
+```
+var Converter = new converter(JSON.stringify(file));
+var convertedFile = Converter.convert();
+```
+
 **Files:**
 - index.html
-- converter.js 
+- css/index.css
+- src/converter.js 
 
 **The following Github parser was used in this program**
 
