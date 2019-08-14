@@ -5,7 +5,16 @@ This program converts 2D drawings from Helioscope and outputs a 3D shading file 
 **Usage:**
 To run, open index.html. Implement the code below to use the converter in other applications.
 ```
-var Converter = new converter(JSON.stringify(file));
+// Grab fileText in node.js or browser
+var fileText = ...;
+
+var parser = new DxfParser();
+try {
+    var dxf = parser.parseSync(fileText);
+}catch(err) {
+    return console.error(err.stack);
+}
+var Converter = new converter(JSON.stringify(dxf));
 var convertedFile = Converter.convert();
 ```
 
