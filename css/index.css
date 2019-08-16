@@ -4,7 +4,7 @@ body {
     height: 80%;
     display: grid;
     grid-template-columns: 0.5fr 1fr 2fr 0.5fr;
-    grid-template-rows: 1fr 3fr 1fr 5fr 2fr;
+    grid-template-rows: 1fr 2fr 0.5fr 5fr 2fr;
     font-family: Calibri;
     color: #0A2645;
 }
@@ -12,19 +12,20 @@ body {
 header {
 	grid-column: 1 / 5;
 	grid-row: 1 / 2;
+
 }
+
 
 #description {
 	grid-column: 2 / 4;
 	grid-row: 2 / 3;
-	align-self: center;
-	justify-self: center;
+	
 }
 
 #upload {
 	grid-column: 2 / 3;
 	grid-row: 3 / 4;
-	align-self: center;
+    align-self: center;
 	justify-self: left;
 	width:100%;
 }
@@ -57,7 +58,7 @@ header {
 
     [type="file"]:focus + label,
     [type="file"] + label:hover, #download_btn:focus, #download_btn:hover {
-        background-color: #fcb019;
+        background-color: #ff9f25;
     }
   
 [type="file"]:focus + label {
@@ -67,9 +68,7 @@ header {
 #download {
 	grid-column: 3 / 4;
 	grid-row: 3 / 4;
-	align-self: center;
 	width: 100%;
-	justify-self: right;
 }
 #download_btn {
     margin-left: 5%;
@@ -84,7 +83,6 @@ header {
     height: 100%;
     font-size: 200%;
     text-align: center;
-    vertical-align: middle;
     position: relative;
     box-shadow: 0 3px 5px 0 #e3e2d3;
     border: 0px;
@@ -117,5 +115,6 @@ footer {
 	justify-self: center;
 }
 #logo {
-	height: 90px;
+    margin-bottom: 5px;
+	height: 150px;
 }
